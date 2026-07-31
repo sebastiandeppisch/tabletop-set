@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+out/
+
+# regenerable, real photos and synthetic demo data are not checked in
+data/photos/*
+!data/photos/.gitkeep
+data/synthetic/*
+!data/synthetic/.gitkeep
+data/out/
