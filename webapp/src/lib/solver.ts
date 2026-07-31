@@ -1,6 +1,11 @@
 /** Trivial brute-force Set search: all 3-combinations, per-attribute all-same or all-different. */
 
 export function isSet(a: string, b: string, c: string): boolean {
+  // A "?" is a placeholder for an attribute the classifier couldn't read,
+  // not a wildcard -- without this check, two unclassified cards would
+  // spuriously "match" each other (every '?' compares equal) and produce a
+  // Set that was never actually verified.
+  if (a.includes("?") || b.includes("?") || c.includes("?")) return false;
   for (let idx = 0; idx < 4; idx++) {
     const values = new Set([a[idx], b[idx], c[idx]]);
     if (values.size === 2) return false;

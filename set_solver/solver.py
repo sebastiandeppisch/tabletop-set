@@ -5,6 +5,12 @@ from itertools import combinations
 
 
 def is_set(a: str, b: str, c: str) -> bool:
+    # A "?" is a placeholder for an attribute the classifier couldn't read,
+    # not a wildcard -- without this check, two unclassified cards would
+    # spuriously "match" each other (every '?' compares equal) and produce a
+    # Set that was never actually verified.
+    if "?" in a or "?" in b or "?" in c:
+        return False
     for idx in range(4):
         values = {a[idx], b[idx], c[idx]}
         if len(values) == 2:
