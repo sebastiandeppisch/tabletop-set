@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Set-Solver</title>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>Set-Solver</h1>
+        <p class="subtitle">Kamera oder Foto -&gt; erkannte Karten &amp; gefundene Sets</p>
+      </header>
+
+      <div class="controls">
+        <button id="start-camera" type="button">Kamera starten</button>
+        <button id="stop-camera" type="button" disabled>Kamera stoppen</button>
+        <label class="file-upload">
+          Foto hochladen
+          <input id="file-input" type="file" accept="image/*" />
+        </label>
+      </div>
+
+      <div id="stage">
+        <video id="video" playsinline muted></video>
+        <img id="still-image" alt="" />
+        <canvas id="overlay"></canvas>
+      </div>
+
+      <p id="status">Kamera oder Foto w&auml;hlen, um loszulegen.</p>
+
+      <section id="sets-panel">
+        <h2>Gefundene Sets</h2>
+        <ul id="sets-list"></ul>
+      </section>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

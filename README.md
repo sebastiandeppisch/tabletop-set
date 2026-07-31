@@ -1,15 +1,20 @@
-# Set-Solver — Python Prototype (Phase 1)
+# Set-Solver
 
 Classical-CV detection and classification of [Set](https://en.wikipedia.org/wiki/Set_(card_game))
 cards. No neural network, no templates, no training data — every attribute
 is derived analytically from geometry and pixel statistics.
 
-This is **Phase 1 only**: a Python/OpenCV prototype used to develop and tune
-the algorithm and build a characterization test suite. Phase 2 (a from-scratch
-TypeScript port for the browser) and Phase 3 (a live-camera web app) are not
-part of this repo. Every technique used here is deliberately restricted to
-what's reproducible in ~100 lines of custom TS — no feature matching, no
-`cv2.ximgproc`, no ML modules.
+- **`set_solver/`** (Phase 1) — the Python/OpenCV prototype used to develop
+  and tune the algorithm and build a characterization test suite. See below.
+- **`webapp/`** (Phase 2 + 3) — a from-scratch TypeScript port (no
+  OpenCV.js) plus a live-camera browser UI. See `webapp/README.md`.
+
+Every technique used in either is deliberately restricted to what's
+reproducible in ~100 lines of custom TS — no feature matching, no
+`cv2.ximgproc`, no ML modules. The TS port is a hand-kept-in-sync
+reimplementation of the same algorithm, not a transpile.
+
+## Python Prototype (Phase 1)
 
 ## Pipeline
 
