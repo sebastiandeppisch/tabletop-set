@@ -22,9 +22,12 @@ SYNTH_CARD_W = C.CANONICAL_CARD_W * 2
 SYNTH_CARD_H = C.CANONICAL_CARD_H * 2
 
 BGR_BY_COLOR = {
-    "R": (40, 40, 205),
-    "G": (60, 150, 40),
-    "P": (150, 40, 140),
+    # Matched to config.HUE_RED/GREEN/PURPLE, which are calibrated from real
+    # deck photos: this deck's "red" prints closer to crimson and "purple"
+    # closer to navy blue than a textbook R/G/P swatch.
+    "R": (81, 41, 190),
+    "G": (118, 150, 44),
+    "P": (150, 32, 32),
 }
 
 STRIPE_SPACING_PX = 7
