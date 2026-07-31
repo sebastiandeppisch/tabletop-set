@@ -1,20 +1,50 @@
 :root {
-  --text: #2c2c34;
-  --bg: #fafafa;
-  --border: #d8d8de;
-  --panel-bg: #ffffff;
-  --accent: #2e7d32;
+  /* light theme: warm card-stock paper + a deep violet lifted from Set's
+     purple symbol, used as the one accent color in the chrome. */
+  --paper: #f7f4ee;
+  --ink: #1c1a20;
+  --ink-soft: #6b6476;
+  --line: #ddd6c7;
+  --panel: #ffffff;
+  --accent: #5c3d8f;
+  --accent-ink: #ffffff;
+  --shadow: rgba(28, 26, 32, 0.1);
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #e5e5ea;
-    --bg: #16171d;
-    --border: #33343c;
-    --panel-bg: #1f2028;
-    --accent: #66bb6a;
+    --paper: #18151f;
+    --ink: #ece8f2;
+    --ink-soft: #9891a8;
+    --line: #332d40;
+    --panel: #211d2b;
+    --accent: #b294f2;
+    --accent-ink: #18151f;
+    --shadow: rgba(0, 0, 0, 0.4);
   }
+}
+
+:root[data-theme="light"] {
+  --paper: #f7f4ee;
+  --ink: #1c1a20;
+  --ink-soft: #6b6476;
+  --line: #ddd6c7;
+  --panel: #ffffff;
+  --accent: #5c3d8f;
+  --accent-ink: #ffffff;
+  --shadow: rgba(28, 26, 32, 0.1);
+}
+
+:root[data-theme="dark"] {
+  --paper: #18151f;
+  --ink: #ece8f2;
+  --ink-soft: #9891a8;
+  --line: #332d40;
+  --panel: #211d2b;
+  --accent: #b294f2;
+  --accent-ink: #18151f;
+  --shadow: rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -23,59 +53,99 @@
 
 body {
   margin: 0;
-  font: 16px/1.45 system-ui, "Segoe UI", Roboto, sans-serif;
-  color: var(--text);
-  background: var(--bg);
+  font-family: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
 }
 
 #app {
-  max-width: 760px;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 28px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kicker {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
 }
 
 header h1 {
-  font-size: 28px;
-  margin: 0 0 4px;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-wrap: balance;
 }
 
 .subtitle {
-  color: color-mix(in srgb, var(--text) 70%, transparent);
-  margin-bottom: 16px;
+  color: var(--ink-soft);
+  font-size: 15px;
+  margin: 2px 0 0;
 }
 
 .controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  margin-bottom: 12px;
 }
 
-button {
+button,
+.file-upload {
   font: inherit;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--panel-bg);
-  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
   cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:focus-visible,
+.file-upload:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: default;
+}
+
+#start-camera {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+#start-camera:hover:not(:disabled) {
+  filter: brightness(1.08);
 }
 
 .file-upload {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--panel-bg);
-  cursor: pointer;
 }
 
 .file-upload input {
@@ -86,9 +156,10 @@ button:disabled {
   position: relative;
   width: 100%;
   background: #000;
-  border-radius: 8px;
+  border-radius: 14px;
   overflow: hidden;
   aspect-ratio: 4 / 3;
+  box-shadow: 0 8px 24px var(--shadow);
 }
 
 #video,
@@ -111,14 +182,33 @@ button:disabled {
 }
 
 #status {
-  margin: 12px 0;
-  font-size: 14px;
-  color: color-mix(in srgb, var(--text) 75%, transparent);
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+#sets-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 #sets-panel h2 {
-  font-size: 18px;
-  margin: 16px 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0;
 }
 
 #sets-list {
@@ -131,17 +221,22 @@ button:disabled {
 }
 
 #sets-list li {
-  padding: 8px 12px;
-  border: 1px solid var(--border);
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
   border-radius: 8px;
-  background: var(--panel-bg);
+  background: var(--panel);
   font-family: ui-monospace, Consolas, monospace;
+  font-size: 14px;
 }
 
 #sets-list:empty::after {
   content: "Noch keine gefunden.";
   display: block;
-  padding: 8px 0;
-  color: color-mix(in srgb, var(--text) 60%, transparent);
+  padding: 10px 14px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--ink-soft);
   font-style: italic;
+  font-size: 14px;
 }
