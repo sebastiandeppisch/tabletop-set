@@ -9,6 +9,7 @@
 import * as C from "./config";
 import { connectedComponents } from "./cc";
 import { convexHull, polygonArea, type ImageBuffer, type Point } from "./geometry";
+import { laplacianVariance, toGrayscaleSmall } from "./sharpness";
 
 export interface SymbolMetrics {
   bbox: [number, number, number, number]; // x, y, w, h
@@ -455,14 +456,24 @@ export function classifyCard(cardImg: ImageBuffer): CardAttributes {
   const color = ranked[0][0];
   const colorMargin = (ranked[1][1] - ranked[0][1]) / 90;
 
+  // A blurred card (motion blur mid-frame on a live camera, most often) can
+  // still produce a confident-looking wrong shape/fill margin -- the ink
+  // signal is still there, just smeared. Damping shape/fill margin by how
+  // sharp the card actually was turns that into a visible orange/red
+  // instead of a confident wrong answer. Colour survives blur well enough
+  // that it's left alone.
+  const { gray, w: gw, h: gh } = toGrayscaleSmall(cardImg, C.CANONICAL_CARD_W);
+  const sharpness = laplacianVariance(gray, gw, gh);
+  const sharpnessFactor = Math.min(1, sharpness / C.CARD_SHARPNESS_MIN_VARIANCE);
+
   return {
     count,
     color,
     shape: shapeMode,
     fill: fillMode !== "unknown" ? fillMode : null,
     colorMargin,
-    shapeMargin,
-    fillMargin,
+    shapeMargin: shapeMargin * sharpnessFactor,
+    fillMargin: fillMargin * sharpnessFactor,
     symbols,
   };
 }

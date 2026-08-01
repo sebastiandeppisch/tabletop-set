@@ -53,5 +53,14 @@ export const FILL_INTERIOR_INK_THRESHOLD: number = 60;
 // --- self-test ---
 export const DECK_SIZE: number = 81;
 
+// --- live camera: per-card blur awareness ---
+// Laplacian variance of the canonical (200x130) warped card. Below this,
+// shape/fill margins are scaled down so a motion-blurred card in a live
+// video frame reads as an orange/red "not sure" instead of a confident
+// wrong answer. Calibrated loosely (a blurred real card measured ~130, a
+// sharp one ~200-280 at this same canonical size) -- worth re-tuning
+// against more live-camera samples if it under- or over-triggers.
+export const CARD_SHARPNESS_MIN_VARIANCE: number = 180;
+
 // --- overlay ---
 export const OVERLAY_MARGIN_GREEN: number = 0.35;
