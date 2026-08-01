@@ -7,11 +7,16 @@ import { drawOverlay } from "./overlay";
 
 const PROCESS_INTERVAL_MS = 600;
 
+type Mode = "live" | "snapshot";
+
 const video = document.querySelector<HTMLVideoElement>("#video")!;
 const stillImage = document.querySelector<HTMLImageElement>("#still-image")!;
 const overlay = document.querySelector<HTMLCanvasElement>("#overlay")!;
 const startCameraBtn = document.querySelector<HTMLButtonElement>("#start-camera")!;
 const stopCameraBtn = document.querySelector<HTMLButtonElement>("#stop-camera")!;
+const capturePhotoBtn = document.querySelector<HTMLButtonElement>("#capture-photo")!;
+const modeLiveBtn = document.querySelector<HTMLButtonElement>("#mode-live")!;
+const modeSnapshotBtn = document.querySelector<HTMLButtonElement>("#mode-snapshot")!;
 const fileInput = document.querySelector<HTMLInputElement>("#file-input")!;
 const statusEl = document.querySelector<HTMLParagraphElement>("#status")!;
 const setsListEl = document.querySelector<HTMLUListElement>("#sets-list")!;
@@ -23,6 +28,7 @@ const workCtx = workCanvas.getContext("2d", { willReadFrequently: true })!;
 let stream: MediaStream | null = null;
 let cameraLoopHandle = 0;
 let cameraLoopToken = 0;
+let mode: Mode = "live";
 
 function setStatus(text: string): void {
   statusEl.textContent = text;
@@ -76,6 +82,14 @@ function processStill(): void {
   renderResult(runPipeline(buffer));
 }
 
+function capturePhoto(): void {
+  setStatus("Foto wird ausgewertet…");
+  setTimeout(() => {
+    const buffer = captureImageBuffer(video, overlay.width, overlay.height);
+    renderResult(runPipeline(buffer));
+  }, 0);
+}
+
 async function cameraLoop(token: number): Promise<void> {
   if (token !== cameraLoopToken) return;
   try {
@@ -87,6 +101,36 @@ async function cameraLoop(token: number): Promise<void> {
   if (token === cameraLoopToken) {
     cameraLoopHandle = window.setTimeout(() => void cameraLoop(token), PROCESS_INTERVAL_MS);
   }
+}
+
+function stopCameraLoop(): void {
+  cameraLoopToken += 1;
+  window.clearTimeout(cameraLoopHandle);
+}
+
+function applyModeToRunningCamera(): void {
+  if (!stream) return;
+  if (mode === "live") {
+    capturePhotoBtn.classList.add("hidden");
+    capturePhotoBtn.disabled = true;
+    cameraLoopToken += 1;
+    void cameraLoop(cameraLoopToken);
+    setStatus("Kamera läuft – Karten ins Bild halten.");
+  } else {
+    stopCameraLoop();
+    capturePhotoBtn.classList.remove("hidden");
+    capturePhotoBtn.disabled = false;
+    setStatus("Kamera bereit – Karten ausrichten und „Foto aufnehmen“ tippen.");
+  }
+}
+
+function setMode(next: Mode): void {
+  mode = next;
+  modeLiveBtn.classList.toggle("active", mode === "live");
+  modeLiveBtn.setAttribute("aria-pressed", String(mode === "live"));
+  modeSnapshotBtn.classList.toggle("active", mode === "snapshot");
+  modeSnapshotBtn.setAttribute("aria-pressed", String(mode === "snapshot"));
+  applyModeToRunningCamera();
 }
 
 async function startCamera(): Promise<void> {
@@ -109,15 +153,12 @@ async function startCamera(): Promise<void> {
   sizeCanvases(video.videoWidth, video.videoHeight);
   startCameraBtn.disabled = true;
   stopCameraBtn.disabled = false;
-  setStatus("Kamera läuft – Karten ins Bild halten.");
 
-  cameraLoopToken += 1;
-  void cameraLoop(cameraLoopToken);
+  applyModeToRunningCamera();
 }
 
 function stopCamera(): void {
-  cameraLoopToken += 1;
-  window.clearTimeout(cameraLoopHandle);
+  stopCameraLoop();
   if (stream) {
     for (const track of stream.getTracks()) track.stop();
     stream = null;
@@ -126,6 +167,8 @@ function stopCamera(): void {
   video.classList.add("hidden");
   startCameraBtn.disabled = false;
   stopCameraBtn.disabled = true;
+  capturePhotoBtn.classList.add("hidden");
+  capturePhotoBtn.disabled = true;
   overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
   setStatus("Kamera gestoppt.");
 }
@@ -143,8 +186,11 @@ function handleFileUpload(file: File): void {
   stillImage.src = url;
 }
 
+modeLiveBtn.addEventListener("click", () => setMode("live"));
+modeSnapshotBtn.addEventListener("click", () => setMode("snapshot"));
 startCameraBtn.addEventListener("click", () => void startCamera());
 stopCameraBtn.addEventListener("click", stopCamera);
+capturePhotoBtn.addEventListener("click", capturePhoto);
 fileInput.addEventListener("change", () => {
   const file = fileInput.files?.[0];
   if (file) handleFileUpload(file);

@@ -13,12 +13,15 @@ src/lib/          port of the Python pipeline, no DOM dependencies
   cc.ts             connected component labeling (shared by detection + classify)
   detection.ts      downscale -> adaptive threshold -> CCL -> quad filter -> warp
   classify.ts       count / shape / color / fill classification
+  sharpness.ts      Laplacian-variance blur score, dampens shape/fill confidence
   labels.ts         4-char label encode/decode
   solver.ts         brute-force Set search
   testSynth.ts      synthetic single-card renderer, tests only
   testScene.ts      synthetic multi-card scene composer, tests only
-src/main.ts        camera + file-upload UI wiring
-src/overlay.ts      draws quads/labels/confidence colours + Set highlights on canvas
+src/main.ts        camera + file-upload UI wiring, live vs. snapshot mode
+src/overlay.ts      draws quad outlines + Set connector lines on canvas
+src/reconstruct.ts  re-draws each card's shape/count/color/fill as a small
+                    graphic, warped onto the card's own quad
 e2e/                manual Playwright smoke scripts (see below)
 ```
 
@@ -47,19 +50,32 @@ anything absent from the test fixtures.
 
 ## App usage
 
-Two input modes:
+Three ways to feed it an image:
 
-- **Kamera starten** — `getUserMedia`, processes a frame every ~600ms
+- **Live-Scan** (camera) — `getUserMedia`, processes a frame every ~600ms
   (throttled on purpose: the whole pipeline runs synchronously on the main
   thread, and firing it on every animation frame would stall the UI on
-  anything but a trivial camera resolution).
+  anything but a trivial camera resolution). Fastest feedback, but a frame
+  grabbed mid-motion can be locally blurred.
+- **Einzelfoto** (camera) — same camera stream, but nothing is processed
+  until "Foto aufnehmen" is tapped. Slower per card, but the deliberate
+  pause tends to produce a sharper frame. Both modes exist side by side
+  specifically so this trade-off can be compared rather than guessed at.
 - **Foto hochladen** — runs the pipeline once on a picked file, useful for
   testing without a camera and for reproducing a specific photo's result.
 
-Detected cards are outlined and labelled on a canvas positioned over the
-video/image. Frame colour is a confidence readout (green/orange/red, same
-idea as the Python prototype's overlay); cards that are part of a found Set
-additionally get a gold ring so a real Set visibly stands out.
+Detected cards get a confidence-coloured quad outline (green/orange/red,
+same idea as the Python prototype's overlay) plus their classified shape,
+count, color and fill re-drawn semi-transparently right on the card --
+faster to eyeball than decoding a 4-letter label. Cards in a found Set are
+additionally connected by a line, one colour per set.
+
+Shape/fill confidence is also dampened by how sharp the card's own warped
+image is (`lib/sharpness.ts`): a motion-blurred card in a live frame reads
+as an uncertain orange/red instead of a confident wrong answer. It doesn't
+skip or gate frames outright -- that needs firmer calibration than a
+handful of samples can give -- so it only ever pulls confidence down, never
+hides a detection.
 
 ## E2E smoke tests
 
@@ -69,7 +85,8 @@ browser). Manual:
 ```
 npm run dev &
 node e2e/upload-smoke.mjs http://localhost:5173 /path/to/photo.jpg
-node e2e/camera-smoke.mjs http://localhost:5173
+node e2e/camera-smoke.mjs http://localhost:5173           # live mode
+node e2e/snapshot-mode-smoke.mjs http://localhost:5173    # einzelfoto mode
 ```
 
 `CHROMIUM_PATH` overrides the Chromium binary if the default

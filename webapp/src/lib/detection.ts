@@ -10,6 +10,7 @@ import {
   approxPolyDPClosed,
   convexHull,
   orderQuad,
+  orderQuadLongEdgeFirst,
   polygonArea,
   warpCard,
   type ImageBuffer,
@@ -184,7 +185,7 @@ function findCardCandidates(
       if (debug) debug.rejectedAspect.push(quad);
       continue;
     }
-    preMedian.push({ quad: orderQuad(quad), area: polygonArea(quad) });
+    preMedian.push({ quad: orderQuadLongEdgeFirst(quad), area: polygonArea(quad) });
   }
 
   if (preMedian.length === 0) return [];

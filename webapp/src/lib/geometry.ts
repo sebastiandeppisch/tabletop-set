@@ -28,6 +28,23 @@ export function orderQuad(pts: Point[]): Point[] {
   return [tl, tr, br, bl];
 }
 
+/** Like orderQuad, but also guarantees TL->TR is the longer edge.
+ *
+ * orderQuad's TL/TR/BR/BL labels are purely positional (topmost-leftmost
+ * corner, etc.) -- they carry no notion of which edge is physically the
+ * card's long edge. A card lying in portrait orientation in the photo can
+ * end up with its short edge labeled TL->TR, which then warps "sideways"
+ * into the landscape canonical box (long axis assumed horizontal). This
+ * rotates the labeling by one corner when needed so long-edge-first holds
+ * regardless of how the card sits in the frame.
+ */
+export function orderQuadLongEdgeFirst(pts: Point[]): Point[] {
+  const [tl, tr, br, bl] = orderQuad(pts);
+  const edgeTlTr = Math.hypot(tr[0] - tl[0], tr[1] - tl[1]);
+  const edgeTrBr = Math.hypot(br[0] - tr[0], br[1] - tr[1]);
+  return edgeTlTr >= edgeTrBr ? [tl, tr, br, bl] : [bl, tl, tr, br];
+}
+
 function argmin(xs: number[]): number {
   let best = 0;
   for (let i = 1; i < xs.length; i++) if (xs[i] < xs[best]) best = i;
@@ -266,7 +283,7 @@ function sampleBilinear(img: ImageBuffer, x: number, y: number): [number, number
 
 /** Warp the quad (ordered TL,TR,BR,BL) region of `src` onto an outW x outH canvas. */
 export function warpCard(src: ImageBuffer, quad: Point[], outW: number, outH: number): ImageBuffer {
-  const ordered = orderQuad(quad);
+  const ordered = orderQuadLongEdgeFirst(quad);
   const destRect: Point[] = [[0, 0], [outW - 1, 0], [outW - 1, outH - 1], [0, outH - 1]];
   // homography FROM the dest rectangle TO the source quad, so we can iterate
   // output pixels and pull samples (inverse warp, avoids matrix inversion).
