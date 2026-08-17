@@ -4,8 +4,17 @@
  * glance confirms what the pipeline saw, no decoding required.
  */
 import * as C from "./lib/config";
-import type { CardAttributes } from "./lib/classify";
 import type { Point } from "./lib/geometry";
+
+/** Only what drawing actually needs -- both a per-frame CardAttributes and a
+ * board-mode ResolvedSlot (count/color/shape/fill can be null there while
+ * a field is still uncertain) satisfy this structurally. */
+export interface ReconstructableAttrs {
+  count: number | null;
+  color: string | null;
+  shape: string | null;
+  fill: string | null;
+}
 
 const SYMBOL_COLOR: Record<string, string> = {
   R: "#d6294a",
@@ -101,8 +110,8 @@ function drawSymbol(
 
 /** Draws into a CANONICAL_CARD_W x CANONICAL_CARD_H box at the origin --
  * the caller sets up a transform mapping that box onto the card's quad. */
-export function drawCardReconstruction(ctx: CanvasRenderingContext2D, attrs: CardAttributes): void {
-  if (![1, 2, 3].includes(attrs.count) || !attrs.color || !attrs.shape || !attrs.fill) return;
+export function drawCardReconstruction(ctx: CanvasRenderingContext2D, attrs: ReconstructableAttrs): void {
+  if (attrs.count === null || ![1, 2, 3].includes(attrs.count) || !attrs.color || !attrs.shape || !attrs.fill) return;
   const w = C.CANONICAL_CARD_W, h = C.CANONICAL_CARD_H;
   const halfW = (w / 3) * 0.3, halfH = h * 0.32;
   const color = SYMBOL_COLOR[attrs.color];

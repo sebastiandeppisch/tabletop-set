@@ -64,3 +64,14 @@ export const CARD_SHARPNESS_MIN_VARIANCE: number = 180;
 
 // --- overlay ---
 export const OVERLAY_MARGIN_GREEN: number = 0.35;
+
+// --- board mode: persistent per-slot tracking across frames ---
+// A card's position barely moves between frames in board mode (camera held
+// over a static table), so slots are matched to new detections by nearest
+// center instead of re-deriving a rigid grid -- robust to loosely-arranged
+// layouts and handles the board growing (4x4+) for free, since an
+// unmatched detection just becomes a new slot.
+export const BOARD_MATCH_DISTANCE_FACTOR: number = 0.6;
+export const BOARD_HISTORY_SIZE: number = 6;
+export const BOARD_REMOVE_GRACE_FRAMES: number = 5;
+export const BOARD_MIN_VOTE_AGREEMENT: number = 0.6;

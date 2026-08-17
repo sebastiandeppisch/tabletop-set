@@ -16,12 +16,20 @@ src/lib/          port of the Python pipeline, no DOM dependencies
   sharpness.ts      Laplacian-variance blur score, dampens shape/fill confidence
   labels.ts         4-char label encode/decode
   solver.ts         brute-force Set search
+  board.ts          persistent per-slot card tracking across frames (Tisch tab)
   testSynth.ts      synthetic single-card renderer, tests only
   testScene.ts      synthetic multi-card scene composer, tests only
-src/main.ts        camera + file-upload UI wiring, live vs. snapshot mode
-src/overlay.ts      draws quad outlines + Set connector lines on canvas
+src/main.ts        Scan-tab camera + file-upload UI wiring, live vs. snapshot mode
+src/overlay.ts      draws quad outlines + Set connector lines on canvas (Scan tab)
 src/reconstruct.ts  re-draws each card's shape/count/color/fill as a small
                     graphic, warped onto the card's own quad
+src/boardMain.ts    Tisch-tab camera loop: feeds detection+classification into
+                    board.ts each frame instead of rendering it directly
+src/boardOverlay.ts draws board-tab quads/reconstructions/Set lines from
+                    board.ts's resolved slots instead of a raw per-frame read
+src/boardUI.ts      DOM chip layer over the board canvas: "X" to confirm a card
+                    is gone, pick-buttons for whichever field stayed uncertain
+src/tabs.ts         Scan/Tisch tab switching, stops the other tab's camera
 e2e/                manual Playwright smoke scripts (see below)
 ```
 
@@ -50,7 +58,12 @@ anything absent from the test fixtures.
 
 ## App usage
 
-Three ways to feed it an image:
+Two top-level tabs, switching between them stops whichever camera was
+running (`tabs.ts`) so both never fight over the device.
+
+### Scan tab
+
+Three ways to feed it an image, each re-classified fresh every time:
 
 - **Live-Scan** (camera) — `getUserMedia`, processes a frame every ~600ms
   (throttled on purpose: the whole pipeline runs synchronously on the main
@@ -77,6 +90,28 @@ skip or gate frames outright -- that needs firmer calibration than a
 handful of samples can give -- so it only ever pulls confidence down, never
 hides a detection.
 
+### Tisch tab
+
+For the common case where the cards actually just lie still on a table.
+Instead of re-classifying every frame from scratch (and flickering between
+a good and a bad read), `lib/board.ts` tracks each card as a persistent
+"slot" matched frame-to-frame by nearest position, and votes on its
+attributes over several reads instead of trusting any single one:
+
+- A slot's field (count/color/shape/fill) resolves once its recent reads
+  agree often enough; otherwise it stays "uncertain" and a small pick-button
+  chip appears right on the card so you can set it manually -- this is
+  aimed squarely at the fill/shape ambiguity that used to just flicker.
+- A card that stops being detected isn't dropped immediately (a couple of
+  bad frames shouldn't lose a card); after several consecutive misses it's
+  shown faded/dashed with an "X" chip, which only actually removes it once
+  you confirm.
+- A detection that doesn't match any existing slot just becomes a new one,
+  so the board growing to 4x4 or beyond needs no special handling.
+- Sets are only searched among fully-resolved, non-pending slots, same "?"
+  rule as the Scan tab (`lib/solver.ts`'s `isSet` rejects any triple
+  touching an unresolved card).
+
 ## E2E smoke tests
 
 Not part of `npm run test` (they need a running dev server and a real
@@ -87,6 +122,7 @@ npm run dev &
 node e2e/upload-smoke.mjs http://localhost:5173 /path/to/photo.jpg
 node e2e/camera-smoke.mjs http://localhost:5173           # live mode
 node e2e/snapshot-mode-smoke.mjs http://localhost:5173    # einzelfoto mode
+node e2e/board-mode-smoke.mjs http://localhost:5173       # tisch tab
 ```
 
 `CHROMIUM_PATH` overrides the Chromium binary if the default

@@ -14,32 +14,64 @@
         <p class="subtitle">Kamera oder Foto &rarr; erkannte Karten &amp; gefundene Sets</p>
       </header>
 
-      <div class="mode-select" role="radiogroup" aria-label="Kamera-Modus">
-        <button id="mode-live" type="button" class="mode-btn active" aria-pressed="true">Live-Scan</button>
-        <button id="mode-snapshot" type="button" class="mode-btn" aria-pressed="false">Einzelfoto</button>
+      <div class="tab-nav" role="tablist" aria-label="Ansicht">
+        <button id="tab-scan" type="button" class="tab-btn active" role="tab" aria-selected="true">Scan</button>
+        <button id="tab-board" type="button" class="tab-btn" role="tab" aria-selected="false">Tisch</button>
       </div>
 
-      <div class="controls">
-        <button id="start-camera" type="button">Kamera starten</button>
-        <button id="stop-camera" type="button" disabled>Kamera stoppen</button>
-        <button id="capture-photo" type="button" disabled class="hidden">Foto aufnehmen</button>
-        <label class="file-upload">
-          Foto hochladen
-          <input id="file-input" type="file" accept="image/*" />
-        </label>
-      </div>
+      <section id="scan-panel">
+        <div class="mode-select" role="radiogroup" aria-label="Kamera-Modus">
+          <button id="mode-live" type="button" class="mode-btn active" aria-pressed="true">Live-Scan</button>
+          <button id="mode-snapshot" type="button" class="mode-btn" aria-pressed="false">Einzelfoto</button>
+        </div>
 
-      <div id="stage">
-        <video id="video" playsinline muted></video>
-        <img id="still-image" alt="" />
-        <canvas id="overlay"></canvas>
-      </div>
+        <div class="controls">
+          <button id="start-camera" type="button">Kamera starten</button>
+          <button id="stop-camera" type="button" disabled>Kamera stoppen</button>
+          <button id="capture-photo" type="button" disabled class="hidden">Foto aufnehmen</button>
+          <label class="file-upload">
+            Foto hochladen
+            <input id="file-input" type="file" accept="image/*" />
+          </label>
+        </div>
 
-      <p id="status">Kamera oder Foto w&auml;hlen, um loszulegen.</p>
+        <div id="stage">
+          <video id="video" playsinline muted></video>
+          <img id="still-image" alt="" />
+          <canvas id="overlay"></canvas>
+        </div>
 
-      <section id="sets-panel">
-        <h2>Gefundene Sets</h2>
-        <ul id="sets-list"></ul>
+        <p id="status">Kamera oder Foto w&auml;hlen, um loszulegen.</p>
+
+        <section id="sets-panel">
+          <h2>Gefundene Sets</h2>
+          <ul id="sets-list"></ul>
+        </section>
+      </section>
+
+      <section id="board-panel" class="hidden">
+        <p class="panel-hint">
+          Kamera &uuml;ber dem ausgelegten Spielfeld halten. Erkannte Karten bleiben gespeichert, auch wenn ein
+          einzelner Frame mal wackelt oder unscharf ist &ndash; bei Unsicherheit (v.a. F&uuml;llung/Form) erscheint
+          ein kleiner Ausw&auml;hl-Button direkt auf der Karte.
+        </p>
+        <div class="controls">
+          <button id="board-start-camera" type="button">Kamera starten</button>
+          <button id="board-stop-camera" type="button" disabled>Kamera stoppen</button>
+        </div>
+
+        <div id="board-stage">
+          <video id="board-video" playsinline muted></video>
+          <canvas id="board-overlay"></canvas>
+          <div id="board-chips"></div>
+        </div>
+
+        <p id="board-status">Kamera starten, um das Spielfeld zu erfassen.</p>
+
+        <section id="board-sets-panel">
+          <h2>Gefundene Sets</h2>
+          <ul id="board-sets-list"></ul>
+        </section>
       </section>
     </div>
     <script type="module" src="/src/main.ts"></script>

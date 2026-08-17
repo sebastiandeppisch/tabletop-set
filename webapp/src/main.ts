@@ -4,6 +4,8 @@ import { detectCards, type CardCandidate } from "./lib/detection";
 import type { ImageBuffer } from "./lib/geometry";
 import { findSets } from "./lib/solver";
 import { drawOverlay } from "./overlay";
+import { initBoardTab } from "./boardMain";
+import { initTabs, registerTabStop } from "./tabs";
 
 const PROCESS_INTERVAL_MS = 600;
 
@@ -195,3 +197,7 @@ fileInput.addEventListener("change", () => {
   const file = fileInput.files?.[0];
   if (file) handleFileUpload(file);
 });
+
+registerTabStop("scan", stopCamera);
+initBoardTab();
+initTabs();
